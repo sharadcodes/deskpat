@@ -20,3 +20,5 @@ Thumbs.db
 
 # Local product launch site
 site/
+
+.vercel

@@ -1,6 +1,6 @@
 # 💻 DESKPAT: Spanned Wallpaper & System Dashboard
 
-Welcome to **DESKPAT**, a modular, spanned multi-monitor wallpaper generator and real-time developer dashboard. Turn your empty desktop workspace into an elegant, custom-rendered status HUD.
+Welcome to **DESKPAT** (derived from the Hindi word **पट (Pat)**, meaning *screen, canvas, or backdrop*), a modular, spanned multi-monitor wallpaper generator and real-time developer status HUD. Turn your empty desktop workspace into an elegant, custom-rendered dashboard.
 
 ![DESKPAT Showcase](deskpat_promo.png)
 
