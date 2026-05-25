@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DESKPAT Wallpaper Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background grid/glow effects -->
+    <div class="wallpaper-bg" id="wallpaper-bg"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="bg-grid"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Info -->
+        <div class="panel sidebar">
+            <div class="logo">
+                <span class="logo-w">D</span>
+                <span class="logo-a">E</span>
+                <span class="logo-l">S</span>
+                <span class="logo-l2">K</span>
+                <span class="logo-l2">P</span>
+                <span class="logo-l2">A</span>
+                <span class="logo-l2">T</span>
+            </div>
+            
+            <div class="clock-widget">
+                <div class="time" id="clock-time">12:00</div>
+                <div class="ampm" id="clock-ampm">AM</div>
+                <div class="date" id="clock-date">Monday, May 25</div>
+            </div>
+
+            <div class="system-status">
+                <div class="status-item">
+                    <span class="status-label">User</span>
+                    <span class="status-val" id="sys-user">Developer</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Local IP</span>
+                    <span class="status-val" id="sys-ip">127.0.0.1</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">RAM Usage</span>
+                    <span class="status-val" id="sys-ram">0 / 0 GB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Dynamic Quote Card -->
+            <div class="panel quote-card">
+                <div class="card-icon">“</div>
+                <div class="quote-text" id="quote-text">
+                    "Loading dynamic wisdom from your source URL..."
+                </div>
+                <div class="quote-author" id="quote-author">System Fetcher</div>
+            </div>
+
+            <!-- Content Details -->
+            <div class="content-row">
+                <!-- Info Feed Card -->
+                <div class="panel feed-card">
+                    <h2 class="section-title" id="content-title">Dashboard Stream</h2>
+                    <ul class="feed-items" id="feed-list">
+                        <li>Fetching feeds and codes...</li>
+                        <li>Configuring monitors layout...</li>
+                    </ul>
+                </div>
+                
+                <!-- Image Preview Card -->
+                <div class="panel image-card" id="image-card" style="display: none;">
+                    <h2 class="section-title">Visual Context</h2>
+                    <div class="image-wrapper">
+                        <img id="display-image" src="" alt="Dynamic Image Content">
+                    </div>
+                </div>
+                
+                <!-- Todo List Card -->
+                <div class="panel todo-card" id="todo-card">
+                    <h2 class="section-title">Tasks & Todos</h2>
+                    <ul class="todo-items" id="todo-list">
+                        <li>No active tasks</li>
+                    </ul>
+                </div>
+                
+                <!-- JSON Inspector Card -->
+                <div class="panel json-card">
+                    <h2 class="section-title">Raw Data Context</h2>
+                    <pre class="json-content" id="json-raw">{}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Update Clock/Date to current snapshot time
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            
+            document.getElementById('clock-time').textContent = `${hours}:${minutes}`;
+            document.getElementById('clock-ampm').textContent = ampm;
+            
+            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            document.getElementById('clock-date').textContent = now.toLocaleDateString('en-US', options);
+
+            // 2. Fetch and render window.wallpaperData
+            const data = window.wallpaperData || {};
+            
+            // Set active theme class based on registry system setting, prefers-color-scheme, or config override
+            const theme = data.system?.theme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+            
+            // Populate Quote
+            if (data.quote || data.content) {
+                document.getElementById('quote-text').textContent = `"${data.quote || data.content}"`;
+                document.getElementById('quote-author').textContent = data.author || data.originator || 'Source';
+            } else if (data.message) {
+                document.getElementById('quote-text').textContent = `"${data.message}"`;
+                document.getElementById('quote-author').textContent = 'Message';
+            }
+            
+            // Populate Title
+            if (data.title) {
+                document.getElementById('content-title').textContent = data.title;
+            }
+            
+            // Populate Items List
+            const feedList = document.getElementById('feed-list');
+            feedList.innerHTML = '';
+            
+            let items = data.items || data.articles || data.todos || data.tasks;
+            if (items && Array.isArray(items)) {
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    if (typeof item === 'object') {
+                        li.textContent = item.title || item.name || item.text || JSON.stringify(item);
+                    } else {
+                        li.textContent = String(item);
+                    }
+                    feedList.appendChild(li);
+                });
+            } else if (data.raw_data) {
+                // If text/raw data, split into paragraphs or display snippet
+                const lines = data.raw_data.split('\n').filter(l => l.trim().length > 0).slice(0, 5);
+                lines.forEach(line => {
+                    const li = document.createElement('li');
+                    li.textContent = line;
+                    feedList.appendChild(li);
+                });
+            } else {
+                // Fallback items based on keys
+                const keys = Object.keys(data).filter(k => typeof data[k] === 'string' && k !== 'quote' && k !== 'content' && k !== 'author' && k !== 'title' && k !== 'message' && k !== 'image_url');
+                if (keys.length > 0) {
+                    keys.forEach(k => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${k}:</strong> ${data[k]}`;
+                        feedList.appendChild(li);
+                    });
+                } else {
+                    const defaultItems = [
+                        "DESKPAT environment ready",
+                        "System detects display configurations",
+                        "Active wallpapers generated via Puppeteer"
+                    ];
+                    defaultItems.forEach(txt => {
+                        const li = document.createElement('li');
+                        li.textContent = txt;
+                        feedList.appendChild(li);
+                    });
+                }
+            }
+            
+            // 3. Render dynamic background watermark and image widget card if image_url exists
+            if (data.image_url) {
+                try {
+                    document.getElementById('display-image').src = data.image_url;
+                    document.getElementById('image-card').style.display = 'flex';
+                    document.getElementById('wallpaper-bg').style.backgroundImage = `url('${data.image_url}')`;
+                } catch (e) {
+                    console.error("Error setting dynamic image assets:", e);
+                }
+            }
+            
+            // 4. Render Todo List
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            const todos = data.todos || [];
+            if (todos.length > 0) {
+                todos.forEach(todo => {
+                    const li = document.createElement('li');
+                    if (todo.done) {
+                        li.className = 'done';
+                    }
+                    li.innerHTML = `
+                        <span class="todo-status-icon">${todo.done ? '✓' : '○'}</span>
+                        <span class="todo-text">${todo.text}</span>
+                    `;
+                    todoList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = 'empty-todo';
+                li.textContent = "All tasks completed!";
+                todoList.appendChild(li);
+            }
+            
+            // 5. Populate System Stats
+            const sys = data.system || {};
+            if (sys.username) document.getElementById('sys-user').textContent = sys.username;
+            if (sys.local_ip) document.getElementById('sys-ip').textContent = sys.local_ip;
+            if (sys.ram_used_gb !== undefined) {
+                document.getElementById('sys-ram').textContent = `${sys.ram_used_gb} / ${sys.ram_total_gb} GB (${sys.ram_usage_percent}%)`;
+            }
+            
+            // 6. Feature Visibility Toggles from config.json
+            const features = data.config?.features || {};
+            
+            if (features.show_quote === false) {
+                const quoteCard = document.querySelector('.quote-card');
+                if (quoteCard) quoteCard.style.display = 'none';
+            }
+            if (features.show_feed === false) {
+                const feedCard = document.querySelector('.feed-card');
+                if (feedCard) feedCard.style.display = 'none';
+            }
+            if (features.show_image === false) {
+                const imageCard = document.querySelector('.image-card');
+                if (imageCard) imageCard.style.display = 'none';
+                document.getElementById('wallpaper-bg').style.backgroundImage = 'none';
+            }
+            if (features.show_todos === false) {
+                const todoCard = document.querySelector('.todo-card');
+                if (todoCard) todoCard.style.display = 'none';
+            }
+            
+            // Default JSON card visibility logic
+            const jsonCard = document.querySelector('.json-card');
+            if (jsonCard) {
+                if (features.show_json === true) {
+                    jsonCard.style.display = 'flex';
+                } else if (features.show_json === false || data.image_url) {
+                    jsonCard.style.display = 'none';
+                } else {
+                    jsonCard.style.display = 'flex'; // Default if not specified and no image
+                }
+            }
+            
+            // Populate Raw JSON Panel
+            document.getElementById('json-raw').textContent = JSON.stringify(data, null, 2);
+        });
+    </script>
+</body>
+</html>

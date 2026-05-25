@@ -1,0 +1,425 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+
+/* ── Reset & Variables ────────────────────────────────────── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-color: #0b0816;
+    --card-bg: rgba(25, 20, 45, 0.45);
+    --card-border: rgba(255, 255, 255, 0.05);
+    --text-primary: #f0f0f5;
+    --text-secondary: #a09cb0;
+    --neon-blue: #00f0ff;
+    --neon-purple: #bd00ff;
+    --neon-green: #39ff14;
+    --font-stack: 'Google Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-stack);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ── Glow / Ambient Backgrounds ───────────────────────────── */
+.glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 1;
+    opacity: 0.35;
+}
+
+.glow-1 {
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--neon-purple) 0%, rgba(0,0,0,0) 70%);
+    top: -10vw;
+    left: -10vw;
+}
+
+.glow-2 {
+    width: 40vw;
+    height: 40vw;
+    background: radial-gradient(circle, var(--neon-blue) 0%, rgba(0,0,0,0) 70%);
+    bottom: -5vw;
+    right: -5vw;
+}
+
+.bg-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 2;
+}
+
+/* ── Dashboard Grid Layout ────────────────────────────────── */
+.dashboard-container {
+    position: relative;
+    z-index: 10;
+    width: 92vw;
+    height: 86vh;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+}
+
+/* ── Glass Panels ────────────────────────────────────────── */
+.panel {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 28px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+/* ── Sidebar Component ───────────────────────────────────── */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.logo-w { color: var(--neon-blue); }
+.logo-a { color: var(--text-primary); }
+.logo-l { color: var(--neon-purple); }
+.logo-l2 { color: var(--neon-purple); }
+
+.clock-widget {
+    margin: 40px 0;
+}
+
+.clock-widget .time {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 0%, var(--text-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.clock-widget .ampm {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--neon-blue);
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.clock-widget .date {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+}
+
+.system-status {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 20px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+}
+
+.status-label {
+    color: var(--text-secondary);
+}
+
+.status-val {
+    font-weight: 600;
+}
+
+.status-val.active {
+    color: var(--neon-green);
+}
+
+/* ── Main Content Component ──────────────────────────────── */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Quote Card */
+.quote-card {
+    position: relative;
+    overflow: hidden;
+    padding: 35px;
+    background: linear-gradient(135deg, rgba(189, 0, 255, 0.1) 0%, rgba(25, 20, 45, 0.45) 100%);
+    border-left: 4px solid var(--neon-purple);
+}
+
+.card-icon {
+    position: absolute;
+    right: 20px;
+    bottom: -30px;
+    font-size: 10rem;
+    font-family: Georgia, serif;
+    color: rgba(255, 255, 255, 0.03);
+    pointer-events: none;
+}
+
+.quote-text {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 15px;
+    color: #ffffff;
+    max-width: 90%;
+}
+
+.quote-author {
+    font-size: 0.95rem;
+    color: var(--neon-blue);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Content Feed & JSON Row */
+.content-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    flex: 1;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    color: var(--neon-blue);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 10px;
+}
+
+/* Feed List */
+.feed-items {
+    list-style: none;
+}
+
+.feed-items li {
+    font-size: 1rem;
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    margin-bottom: 10px;
+    border-left: 3px solid var(--neon-blue);
+    line-height: 1.4;
+}
+
+/* JSON Code Block */
+.json-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.json-content {
+    flex: 1;
+    overflow-y: auto;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85rem;
+    color: #a5e844;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Custom Scrollbar for JSON Card */
+.json-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.json-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.json-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.json-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Wallpaper Background Watermark ───────────────────────── */
+.wallpaper-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.12;
+    filter: blur(20px) saturate(1.2);
+    z-index: 0;
+    transition: background-image 0.8s ease-in-out;
+}
+
+/* ── Dynamic Image Card Widget ───────────────────────────── */
+.image-card {
+    display: none; /* Toggle via JS */
+    flex-direction: column;
+}
+
+.image-wrapper {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+    position: relative;
+    min-height: 200px;
+}
+
+.image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* ── Todo List Card Styles ───────────────────────────────── */
+.todo-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.todo-items {
+    list-style: none;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.todo-items li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.todo-items li.done {
+    opacity: 0.55;
+    text-decoration: line-through;
+    border-left: 3px solid var(--text-secondary);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.todo-items li:not(.done) {
+    border-left: 3px solid var(--neon-blue);
+}
+
+.todo-status-icon {
+    font-weight: bold;
+    color: var(--neon-blue);
+}
+
+.todo-items li.done .todo-status-icon {
+    color: var(--text-secondary);
+}
+
+.empty-todo {
+    color: var(--text-secondary) !important;
+    font-style: italic;
+    border-left: 3px dashed var(--text-secondary) !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+/* ── Light Mode Variables & Overrides ─────────────────────── */
+body.light-theme {
+    --bg-color: #fffbf7;
+    --card-bg: rgba(255, 252, 248, 0.75);
+    --card-border: rgba(139, 90, 43, 0.08);
+    --text-primary: #4e4039;
+    --text-secondary: #8b7970;
+    --neon-blue: #d95c50;
+    --neon-purple: #e07a5f;
+    --neon-green: #388e3c;
+}
+
+body.light-theme .glow-1 {
+    opacity: 0.15;
+}
+
+body.light-theme .glow-2 {
+    opacity: 0.15;
+}
+
+body.light-theme .wallpaper-bg {
+    opacity: 0.08;
+    filter: blur(15px) saturate(0.8);
+}
+
+body.light-theme .bg-grid {
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+}
+
+body.light-theme .card-icon {
+    color: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .feed-items li {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .todo-items li {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .todo-items li.done {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+
+

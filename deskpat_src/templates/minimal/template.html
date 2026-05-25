@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Quote Wallpaper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wallpaper-container">
+        <!-- Left Side: Todo & Stats Section (20%) -->
+        <div class="todo-section">
+            <!-- Upper part: Todos -->
+            <div class="todo-content">
+                <h2 class="todo-title">Tasks & Todos</h2>
+                <ul class="todo-list" id="todo-list">
+                    <li>No active tasks</li>
+                </ul>
+            </div>
+            <!-- Bottom part: System Stats -->
+            <div class="stats-content">
+                <div class="stats-item">
+                    <span class="stats-icon">⚡</span>
+                    <div class="stats-info">
+                        <span class="stats-label">SYSTEM UPTIME</span>
+                        <span class="stats-val" id="sys-uptime">0.0 hours</span>
+                    </div>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-icon">🌐</span>
+                    <div class="stats-info">
+                        <span class="stats-label">IP ADDRESS</span>
+                        <span class="stats-val" id="sys-ip">127.0.0.1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Quote & Author (80%) -->
+        <div class="quote-section">
+            <div class="quote-content">
+                <div class="quote-text" id="quote-text">
+                    "Loading your daily quote..."
+                </div>
+                <div class="quote-author" id="quote-author">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const data = window.wallpaperData || {};
+
+            // Set active theme class based on registry system setting, prefers-color-scheme, or config override
+            const theme = data.system?.theme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+
+            // 1. Populate Quote & Author
+            if (data.quote || data.content) {
+                document.getElementById('quote-text').textContent = `"${data.quote || data.content}"`;
+                document.getElementById('quote-author').textContent = `— ${data.author || data.originator || 'Sadhguru'}`;
+            } else if (data.message) {
+                document.getElementById('quote-text').textContent = `"${data.message}"`;
+                document.getElementById('quote-author').textContent = "— Message";
+            }
+
+            // 2. Populate Todo list
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            const todos = data.todos || [];
+            
+            if (todos.length > 0) {
+                todos.forEach(todo => {
+                    const li = document.createElement('li');
+                    if (todo.done) {
+                        li.className = 'done';
+                    }
+                    li.innerHTML = `
+                        <span class="todo-bullet">${todo.done ? '✓' : '○'}</span>
+                        <span class="todo-item-text">${todo.text}</span>
+                    `;
+                    todoList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = 'empty';
+                li.textContent = "All tasks completed!";
+                todoList.appendChild(li);
+            }
+
+            // 3. Populate System Stats
+            const uptime = data.system?.uptime || { hours: 0, minutes: 0 };
+            document.getElementById('sys-uptime').textContent = `${uptime.hours}h ${uptime.minutes}m`;
+            document.getElementById('sys-ip').textContent = data.system?.local_ip || '127.0.0.1';
+        });
+    </script>
+</body>
+</html>

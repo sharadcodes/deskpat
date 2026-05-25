@@ -1,0 +1,19 @@
+# Dependencies
+deskpat_src/node_modules/
+deskpat_src/venv/
+__pycache__/
+*.pyc
+
+# Local database & config
+deskpat_src/todo.json
+deskpat_src/data.json
+
+# Generated assets & temp screens
+deskpat_src/wallpaper.png
+deskpat_src/temp_screen_*.png
+
+# OS & Editor configurations
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
