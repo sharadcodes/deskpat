@@ -2,6 +2,8 @@
 
 Welcome to **DESKPAT**, a modular, spanned multi-monitor wallpaper generator and system information dashboard. This guide explains the project structure, how to configure the engine, manage your tasks list, and write custom templates, sensors, or fetchers.
 
+![DESKPAT Showcase](deskpat_promo.png)
+
 ---
 
 ## 📂 Project Structure
