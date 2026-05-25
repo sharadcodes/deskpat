@@ -78,7 +78,10 @@ python deskpat_src/deskpat.py
 
 ## ⏰ Pro-Tip: Automate Updates with Task Scheduler
 
-To re-apply the generated wallpaper after Windows sign-in, register a current-user logon task. The 30-second delay gives Windows time to initialize the monitor layout before Deskpat generates the spanned wallpaper.
+To re-apply the generated wallpaper after Windows sign-in and keep system stats fresh, register two current-user tasks:
+
+* `Deskpat-AtLogon` runs once after sign-in. The 30-second delay gives Windows time to initialize the monitor layout before Deskpat generates the spanned wallpaper.
+* `Deskpat-Every15Min` refreshes the wallpaper every 15 minutes so uptime, RAM, todos, and fetched content stay current.
 
 ### On Windows (via PowerShell)
 Run this command from the project root. Administrator PowerShell is not required for the current-user task:
@@ -109,15 +112,50 @@ Register-ScheduledTask `
   -Force
 ```
 
+Register the repeating refresh task:
+
+```powershell
+$taskName = "Deskpat-Every15Min"
+$deskpat = "C:\SOFTWARES\deskpat\deskpat.ps1"
+
+$action = New-ScheduledTaskAction `
+  -Execute "powershell.exe" `
+  -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$deskpat`"" `
+  -WorkingDirectory "C:\SOFTWARES\deskpat"
+
+$trigger = New-ScheduledTaskTrigger `
+  -Once `
+  -At (Get-Date).AddMinutes(1) `
+  -RepetitionInterval (New-TimeSpan -Minutes 15) `
+  -RepetitionDuration (New-TimeSpan -Days 3650)
+
+$settings = New-ScheduledTaskSettingsSet `
+  -StartWhenAvailable `
+  -AllowStartIfOnBatteries `
+  -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask `
+  -TaskName $taskName `
+  -Action $action `
+  -Trigger $trigger `
+  -Settings $settings `
+  -Description "Update Deskpat wallpaper every 15 minutes" `
+  -Force
+```
+
+The refresh interval is customizable. Change `New-TimeSpan -Minutes 15` to any interval you want, such as `New-TimeSpan -Minutes 5` or `New-TimeSpan -Minutes 30`. Shorter intervals work, but each run launches Puppeteer and rewrites the wallpaper, so 15 minutes is a practical default.
+
 Verify the task without signing out:
 
 ```powershell
-Start-ScheduledTask -TaskName "Deskpat-AtLogon"
-Get-ScheduledTaskInfo -TaskName "Deskpat-AtLogon" |
+Start-ScheduledTask -TaskName "Deskpat-Every15Min"
+Get-ScheduledTaskInfo -TaskName "Deskpat-Every15Min" |
   Select-Object LastRunTime, LastTaskResult
+
+schtasks /Query /TN Deskpat-Every15Min /FO LIST /V
 ```
 
-`LastTaskResult` should be `0`. You can also confirm Windows is caching the correct spanned wallpaper dimensions:
+`LastTaskResult` should be `0`, and `schtasks` should show `Repeat: Every: 0 Hour(s), 15 Minute(s)`. You can also confirm Windows is caching the correct spanned wallpaper dimensions:
 
 ```powershell
 Add-Type -AssemblyName System.Drawing
@@ -136,6 +174,7 @@ Remove the task if needed:
 
 ```powershell
 Unregister-ScheduledTask -TaskName "Deskpat-AtLogon" -Confirm:$false
+Unregister-ScheduledTask -TaskName "Deskpat-Every15Min" -Confirm:$false
 ```
 
 ### On macOS / Linux (via Cron)
