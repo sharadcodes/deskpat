@@ -78,16 +78,64 @@ python deskpat_src/deskpat.py
 
 ## ⏰ Pro-Tip: Automate Updates with Task Scheduler
 
-To keep your dashboard updating silently in the background (e.g. every 15 minutes), set up a scheduled task:
+To re-apply the generated wallpaper after Windows sign-in, register a current-user logon task. The 30-second delay gives Windows time to initialize the monitor layout before Deskpat generates the spanned wallpaper.
 
 ### On Windows (via PowerShell)
-Run this command in an **Administrator PowerShell session** to register a silent update task:
+Run this command from the project root. Administrator PowerShell is not required for the current-user task:
 
 ```powershell
-$action = New-ScheduledTaskAction -Execute "C:\SOFTWARES\deskpat\deskpat.bat" -WorkingDirectory "C:\SOFTWARES\deskpat"
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 15) -RepetitionDuration ([TimeSpan]::MaxValue)
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
-Register-ScheduledTask -TaskName "Deskpat-AutoUpdate" -Action $action -Trigger $trigger -Settings $settings -Force
+$taskName = "Deskpat-AtLogon"
+$deskpat = "C:\SOFTWARES\deskpat\deskpat.ps1"
+
+$action = New-ScheduledTaskAction `
+  -Execute "powershell.exe" `
+  -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$deskpat`"" `
+  -WorkingDirectory "C:\SOFTWARES\deskpat"
+
+$trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+$trigger.Delay = "PT30S"
+
+$settings = New-ScheduledTaskSettingsSet `
+  -StartWhenAvailable `
+  -AllowStartIfOnBatteries `
+  -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask `
+  -TaskName $taskName `
+  -Action $action `
+  -Trigger $trigger `
+  -Settings $settings `
+  -Description "Run Deskpat wallpaper generator after user logon" `
+  -Force
+```
+
+Verify the task without signing out:
+
+```powershell
+Start-ScheduledTask -TaskName "Deskpat-AtLogon"
+Get-ScheduledTaskInfo -TaskName "Deskpat-AtLogon" |
+  Select-Object LastRunTime, LastTaskResult
+```
+
+`LastTaskResult` should be `0`. You can also confirm Windows is caching the correct spanned wallpaper dimensions:
+
+```powershell
+Add-Type -AssemblyName System.Drawing
+$path = "$env:APPDATA\Microsoft\Windows\Themes\TranscodedWallpaper"
+$img = [System.Drawing.Image]::FromFile($path)
+try {
+  [pscustomobject]@{ Width = $img.Width; Height = $img.Height }
+} finally {
+  $img.Dispose()
+}
+```
+
+For a two-monitor layout, the cached dimensions should match the full virtual desktop canvas, not a single monitor. For example, a 2560x1440 primary plus a 1920x1080 secondary may produce a `4480x1440` spanned cache.
+
+Remove the task if needed:
+
+```powershell
+Unregister-ScheduledTask -TaskName "Deskpat-AtLogon" -Confirm:$false
 ```
 
 ### On macOS / Linux (via Cron)
