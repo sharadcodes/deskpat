@@ -17,3 +17,6 @@ deskpat_src/temp_screen_*.png
 Thumbs.db
 .vscode/
 .idea/
+
+# Local product launch site
+site/
