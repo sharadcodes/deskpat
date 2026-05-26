@@ -54,17 +54,18 @@ def check_npm_dependencies():
     """Ensure node_modules/puppeteer is installed in deskpat_src."""
     deskpat_src_dir = os.path.dirname(os.path.abspath(__file__))
     node_modules = os.path.join(deskpat_src_dir, "node_modules")
-    if not os.path.exists(node_modules):
+    puppeteer_dir = os.path.join(node_modules, "puppeteer")
+    if not os.path.exists(node_modules) or not os.path.exists(puppeteer_dir):
         print(f"  {Style.YELLOW}Puppeteer node modules not found. Running npm install...{Style.RESET}")
         try:
             # Check if npm is available
-            subprocess.run(["npm", "--version"], shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["npm", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             print(f"  {Style.RED}Error:{Style.RESET} Node.js / npm not found in PATH. Please install Node.js and try again.")
             sys.exit(1)
             
         try:
-            subprocess.run(["npm", "install"], cwd=deskpat_src_dir, shell=True, check=True)
+            subprocess.run(["npm", "install"], cwd=deskpat_src_dir, check=True)
             print(f"  {Style.GREEN}Puppeteer installed successfully.{Style.RESET}")
         except Exception as e:
             print(f"  {Style.RED}Error running npm install:{Style.RESET} {e}")
@@ -411,10 +412,10 @@ def fetch_and_save_data(url):
         print(f"  {Style.RED}Error fetching URL data:{Style.RESET} {e}")
         return None
 
-def ensure_default_data():
-    """Ensure data.json exists in deskpat_src, creating a default one if missing."""
+def ensure_default_data(force=False):
+    """Ensure data.json exists in deskpat_src, optionally overwriting it with defaults."""
     data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.json")
-    if not os.path.exists(data_path):
+    if force or not os.path.exists(data_path):
         default_data = {
             "title": "DESKPAT DEV ENVIRONMENT",
             "message": "Welcome back! Your screen rendering pipeline is active.",
@@ -501,7 +502,7 @@ def run_custom_script(script_name, extra_args=None):
         result = subprocess.run(
             cmd,
             cwd=deskpat_src_dir,
-            shell=True if ext in [".bat", ".cmd", ".ps1"] else (os.name == 'nt'),
+            shell=True if ext in [".bat", ".cmd"] else False,
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -525,6 +526,17 @@ def run_custom_script(script_name, extra_args=None):
     except subprocess.CalledProcessError as err:
         print(f"  {Style.RED}Error running script:{Style.RESET} {err}")
         print(f"  Script Stderr: {err.stderr}")
+        output_str = (err.stdout or "").strip()
+        if output_str:
+            try:
+                parsed_data = json.loads(output_str)
+                data_path = os.path.join(deskpat_src_dir, "data.json")
+                with open(data_path, "w", encoding="utf-8") as f:
+                    json.dump(parsed_data, f, indent=2)
+                print(f"  {Style.YELLOW}Script failed but provided fallback JSON. Saved to {data_path}.{Style.RESET}")
+                return True
+            except ValueError:
+                pass
         return False
 
 def handle_todo_cli(args):
@@ -791,8 +803,8 @@ def main():
     elif script_to_run:
         success = run_custom_script(script_to_run, extra_args)
         if not success:
-            print(f"  {Style.YELLOW}Falling back to existing data.json configuration.{Style.RESET}")
-            ensure_default_data()
+            print(f"  {Style.YELLOW}Live fetch failed. Writing deterministic default fallback payload.{Style.RESET}")
+            ensure_default_data(force=True)
     else:
         ensure_default_data()
         
@@ -877,8 +889,6 @@ def main():
     
     # ── Render Screens via Puppeteer ────────────────────────
     temp_images = []
-    # ── Render Screens via Puppeteer ────────────────────────
-    temp_images = []
     render_js_path = os.path.join(deskpat_src_dir, "render.js")
     data_json_path = os.path.join(deskpat_src_dir, "data.json")
     
@@ -898,7 +908,7 @@ def main():
         
         print(f"    - Render screen {idx+1} ({m['width']}x{m['height']}) -> {os.path.basename(img_out)}")
         try:
-            subprocess.run(cmd, check=True, shell=True)
+            subprocess.run(cmd, check=True)
         except subprocess.CalledProcessError as err:
             print(f"  {Style.RED}Failed to render display screen {idx+1}:{Style.RESET} {err}")
             sys.exit(1)
